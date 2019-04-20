@@ -47,7 +47,7 @@ function ItemLookup ($category, $keywords, $page = 1)
 
 
     // 必須
-    $access_key_id = 'AKIAJKSYD3C3HHE5XAQA';
+    $access_key_id = ACCESS_KEY_ID;
     $secret_access_key = YOUR_SECRET_KEY;
     $params['AssociateTag'] = 'vocalendar-22';
     $baseurl = 'http://ecs.amazonaws.jp/onca/xml';
