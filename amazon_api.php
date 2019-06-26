@@ -1,16 +1,6 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <title>Amazon API test</title>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="amazon_api.css">
-</head>
-<body>
-
 <?php
-
-$category = isset($_GET['category']) ? $_GET['category'] : "Music";
-$keyword  = isset($_GET['keyword']) ? $_GET['keyword'] : "初音ミク";
+$category = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?? 'Music';
+$keyword  = filter_input(INPUT_GET, 'keywords', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?? "初音ミク";
 
 $response = ""; // XML戻り値
 $xmlArray = array(); // XMLパース後(JSON)
@@ -18,7 +8,14 @@ $xmlObject = ""; // JSON->連想配列
 $ItemArray = array();
 $releasedate = "";
 
-?>
+?><!DOCTYPE html>
+<html lang="ja">
+<head>
+    <title>Amazon API test</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="amazon_api.css">
+</head>
+<body>
 
 <section id="searchOptions">
 
@@ -35,6 +32,12 @@ $releasedate = "";
 </ul>
 
 </form>
+
+<?php if (!defined('ACCESS_KEY_ID') || !defined('YOUR_SECRET_KEY')): ?>
+    <p>設定が読み取れません</p>
+</body>
+<?php exit(); ?>
+<?php endif; ?>
 
 </section>
 
@@ -114,6 +117,7 @@ function ItemLookup ($category, $keywords, $page = 1)
 
     // xml取得
     $xml = request($url);
+
     // xml出力
     return $xml;
 }
@@ -143,27 +147,64 @@ for ($page = 1; $page <= 3; $page++) {
 
     $xmlArray = ItemLookup($category, $keyword, $page);
     if (is_array($xmlArray)) {
+        if(array_key_exists('Error', $xmlArray)) {
+            echo 'Error!!<br />';
+            $code = $xmlArray['Error']['Code'] ?? '';
+            $msg = $xmlArray['Error']['Message'] ?? 'System Error.';
+            echo htmlspecialchars($code).'<br />';
+            echo htmlspecialchars($msg).'<br />';
+            echo '<br />';
+            break;
+        } else if (!isset($xmlArray['Items']['Item'])) {
+            echo 'Error!!<br />';
+            $code = $xmlArray['Items']['Request']['Errors']['Error']['Code'] ?? '';
+            $msg = $xmlArray['Items']['Request']['Errors']['Error']['Message'] ?? 'System Error.';
+            echo htmlspecialchars($code).'<br />';
+            echo htmlspecialchars($msg).'<br />';
+            echo '<br />';
+            break;
+        }
         $ItemArray = array_merge($ItemArray, $xmlArray['Items']['Item']);
     }
-
+    // 間隔を開けないとアクセスエラーとなるため、0.5秒sleep
+    usleep(500 * 1000);
 }
 
-echo "<ul id='SearchResult'>". PHP_EOL;
-if( is_array( $ItemArray ) ){
-
-    foreach ($ItemArray as $ItemTemp) {
-        echo "<li>".PHP_EOL;
-        echo "<h2 class='ReleaseDate'>".$ItemTemp['ItemAttributes'][$releasedate]."</h2>".PHP_EOL;
-        echo "<h1 class='title'><a href='".$ItemTemp['DetailPageURL']."' target='_blank'>".$ItemTemp['ItemAttributes']['Title']."</a></h1>".PHP_EOL;
-        echo "</li>".PHP_EOL;
+function get_affiliate_url($url) {
+    $component = parse_url($url);
+    if ($component === false) {
+        return $url;
     }
 
-} else {
-    print "<li>It IS NOT the array!</li>". PHP_EOL;
+    $affaliate = ($component['scheme'] ?? 'http').'://'.($component['host'] ?? 'amazon.com').'/o/ASIN';
+    parse_str($component['query'] ?? '', $query);
+    $ASIN = $query['creativeASIN'] ?? '';
+
+    if (empty($ASIN)) {
+        return $url;
+    }
+
+    $affaliate = $affaliate.'/'.$ASIN.'/vocalendar-22/';
+    return $affaliate;
 }
-echo "</ul>". PHP_EOL;
 
 ?>
+<ul id='SearchResult'>
+<?php if( is_array( $ItemArray ) ): ?>
+    <?php foreach ($ItemArray as $ItemTemp) : ?>
+        <li>
+            <p class='ReleaseDate'><?= htmlspecialchars($ItemTemp['ItemAttributes'][$releasedate]) ?></p>
+            <p class='title'>
+                [<a href='<?= htmlspecialchars($ItemTemp['DetailPageURL']) ?>' target='_blank'>Link</a>]
+                [<a href='<?= htmlspecialchars(get_affiliate_url( $ItemTemp['DetailPageURL'] )) ?>' target='_blank'>Affiliate</a>]
+                 <?= htmlspecialchars($ItemTemp['ItemAttributes']['Title']) ?>
+            </p>
+        </li>
+    <?php endforeach; ?>
+<?php else: ?>
+    <li>It IS NOT the array!</li>
+<?php endif; ?>
+</ul>
 
 </body>
 </html>
