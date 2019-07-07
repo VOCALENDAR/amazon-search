@@ -1,6 +1,6 @@
 <?php
-$category = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?: 'Music';
-$keyword  = filter_input(INPUT_GET, 'keywords', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?: "初音ミク";
+$category = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?? 'Music';
+$keyword  = filter_input(INPUT_GET, 'keywords', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?? "初音ミク";
 
 $response = ""; // XML戻り値
 $xmlArray = array(); // XMLパース後(JSON)
@@ -153,13 +153,13 @@ for ($page = 1; $page <= 3; $page++) {
         break;
     } else if (is_array($xmlArray)) {
         if(array_key_exists('Error', $xmlArray)) {
-            $code = $xmlArray['Error']['Code'] ?: '';
-            $msg = $xmlArray['Error']['Message'] ?: 'System Error.';
+            $code = $xmlArray['Error']['Code'] ?? '';
+            $msg = $xmlArray['Error']['Message'] ?? 'System Error.';
             outputErrorMessage($code, $msg);
             break;
         } else if (!isset($xmlArray['Items']['Item'])) {
-            $code = $xmlArray['Items']['Request']['Errors']['Error']['Code'] ?: '';
-            $msg = $xmlArray['Items']['Request']['Errors']['Error']['Message'] ?: 'System Error.';
+            $code = $xmlArray['Items']['Request']['Errors']['Error']['Code'] ?? '';
+            $msg = $xmlArray['Items']['Request']['Errors']['Error']['Message'] ?? 'System Error.';
             outputErrorMessage($code, $msg);
             break;
         }
@@ -182,9 +182,9 @@ function get_affiliate_url($url) {
         return $url;
     }
 
-    $affaliate = ($component['scheme'] ?: 'http').'://'.($component['host'] ?: 'amazon.com').'/o/ASIN';
-    parse_str($component['query'] ?: '', $query);
-    $ASIN = $query['creativeASIN'] ?: '';
+    $affaliate = ($component['scheme'] ?? 'http').'://'.($component['host'] ?? 'amazon.com').'/o/ASIN';
+    parse_str($component['query'] ?? '', $query);
+    $ASIN = $query['creativeASIN'] ?? '';
 
     if (empty($ASIN)) {
         return $url;
