@@ -1,4 +1,7 @@
 <?php
+define('ACCESS_KEY_ID', getenv('ACCESS_KEY_ID'));
+define('YOUR_SECRET_KEY', getenv('YOUR_SECRET_KEY'));
+
 $category = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? 'Music';
 $keywords = filter_input(INPUT_GET, 'keywords', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? "初音ミク";
 
