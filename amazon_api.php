@@ -1,6 +1,6 @@
 <?php
 $category = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?? 'Music';
-$keyword  = filter_input(INPUT_GET, 'keywords', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?? "初音ミク";
+$keyword  = filter_input(INPUT_GET, 'keyword', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?? "初音ミク";
 
 $response = ""; // XML戻り値
 $xmlArray = array(); // XMLパース後(JSON)
