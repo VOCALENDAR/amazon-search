@@ -1,6 +1,6 @@
 <?php
-$category = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?? 'Music';
-$keyword  = filter_input(INPUT_GET, 'keyword', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?? "初音ミク";
+$category = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? 'Music';
+$keywords = filter_input(INPUT_GET, 'keywords', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? "初音ミク";
 
 $response = ""; // XML戻り値
 $xmlArray = array(); // XMLパース後(JSON)
@@ -20,15 +20,15 @@ $releasedate = "";
 <section id="searchOptions">
 
 <form method="GET">
-<input type="text" name="keyword" value="<?php echo $keyword;?>">
-<input type="hidden" name="category" value="<?php echo $category; ?>">
+<input type="text" name="keywords" value="<?= htmlspecialchars($keywords) ?>">
+<input type="hidden" name="category" value="<?= htmlspecialchars($category) ?>">
 
 <ul id="categorySelector">
-<li <?php if ($category == "Music") echo "class='active'"; ?>><label><input type="radio" name="category" value="Music" <?php if ($category == "Music") echo "checked"; ?>><a href="?category=Music&keyword=<?php echo $keyword; ?>">Music</a></label></li>
-<li <?php if ($category == "DVD") echo "class='active'"; ?>><label><input type="radio" name="category" value="DVD" <?php if ($category == "DVD") echo "checked"; ?>><a href="?category=DVD&keyword=<?php echo $keyword; ?>">DVD</a></li>
-<li <?php if ($category == "Books") echo "class='active'"; ?>><label><input type="radio" name="category" value="Books" <?php if ($category == "Books") echo "checked"; ?>><a href="?category=Books&keyword=<?php echo $keyword; ?>">Books</a></li>
-<li <?php if ($category == "Hobbies") echo "class='active'"; ?>><label><input type="radio" name="category" value="Hobbies" <?php if ($category == "Hobbies") echo "checked"; ?>><a href="?category=Hobbies&keyword=<?php echo $keyword; ?>">Hobbies</a></li>
-<li <?php if ($category == "Toys") echo "class='active'"; ?>><label><input type="radio" name="category" value="Toys" <?php if ($category == "Toys") echo "checked"; ?>><a href="?category=Toys&keyword=<?php echo $keyword; ?>">Toys</a></li>
+<li <?php if ($category == "Music") echo "class='active'"; ?>><label><input type="radio" name="category" value="Music" <?php if ($category == "Music") echo "checked"; ?>><a href="?category=Music&keywords=<?php echo $keywords; ?>">Music</a></label></li>
+<li <?php if ($category == "DVD") echo "class='active'"; ?>><label><input type="radio" name="category" value="DVD" <?php if ($category == "DVD") echo "checked"; ?>><a href="?category=DVD&keywords=<?php echo $keywords; ?>">DVD</a></li>
+<li <?php if ($category == "Books") echo "class='active'"; ?>><label><input type="radio" name="category" value="Books" <?php if ($category == "Books") echo "checked"; ?>><a href="?category=Books&keywords=<?php echo $keywords; ?>">Books</a></li>
+<li <?php if ($category == "Hobbies") echo "class='active'"; ?>><label><input type="radio" name="category" value="Hobbies" <?php if ($category == "Hobbies") echo "checked"; ?>><a href="?category=Hobbies&keywords=<?php echo $keywords; ?>">Hobbies</a></li>
+<li <?php if ($category == "Toys") echo "class='active'"; ?>><label><input type="radio" name="category" value="Toys" <?php if ($category == "Toys") echo "checked"; ?>><a href="?category=Toys&keywords=<?php echo $keywords; ?>">Toys</a></li>
 </ul>
 
 </form>
@@ -43,11 +43,10 @@ $releasedate = "";
 
 <?php
 
-function ItemLookup ($category, $keywords, $page = 1)
+function ItemLookup ($category, $keyword, $page = 1)
 {
     global $releasedate;
     $params = array();
-
 
     // 必須
     $access_key_id = ACCESS_KEY_ID;
@@ -57,7 +56,7 @@ function ItemLookup ($category, $keywords, $page = 1)
 
     // パラメータ
     $params['Service'] = 'AWSECommerceService';
-    $params['Keywords'] = $keywords;
+    $params['Keywords'] = $keyword;
     $params['Timestamp'] = gmdate('Y-m-d\TH:i:s\Z');
     $params['ItemPage'] = $page;
     $params['AWSAccessKeyId'] = $access_key_id;
@@ -146,7 +145,7 @@ function request($url){
 
 for ($page = 1; $page <= 3; $page++) {
 
-    $xmlArray = ItemLookup($category, $keyword, $page);
+    $xmlArray = ItemLookup($category, $keywords, $page);
 
     if ($xmlArray === false) {
         outputErrorMessage('false', 'simplexml_load_string Request Error!');
