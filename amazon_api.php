@@ -1,6 +1,6 @@
 <?php
-$category = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?? 'Music';
-$keyword  = filter_input(INPUT_GET, 'keywords', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?? "初音ミク";
+$category = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?: 'Music';
+$keyword  = filter_input(INPUT_GET, 'keywords', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_BACKTICK) ?: "初音ミク";
 
 $response = ""; // XML戻り値
 $xmlArray = array(); // XMLパース後(JSON)
@@ -135,8 +135,9 @@ function request($url){
     $response = curl_exec($ch);
     curl_close($ch);
 
-    $xmlObject = simplexml_load_string ($response);
-    $xmlArray = json_decode (json_encode( $xmlObject ),TRUE);
+    $xmlObject = simplexml_load_string($response);
+
+    $xmlArray = json_decode( json_encode($xmlObject), TRUE);
     return $xmlArray;
 
     //return simplexml_load_string($response); //オブジェクトとして返す場合
@@ -146,22 +147,20 @@ function request($url){
 for ($page = 1; $page <= 3; $page++) {
 
     $xmlArray = ItemLookup($category, $keyword, $page);
-    if (is_array($xmlArray)) {
+
+    if ($xmlArray === false) {
+        outputErrorMessage('false', 'simplexml_load_string Request Error!');
+        break;
+    } else if (is_array($xmlArray)) {
         if(array_key_exists('Error', $xmlArray)) {
-            echo 'Error!!<br />';
-            $code = $xmlArray['Error']['Code'] ?? '';
-            $msg = $xmlArray['Error']['Message'] ?? 'System Error.';
-            echo htmlspecialchars($code).'<br />';
-            echo htmlspecialchars($msg).'<br />';
-            echo '<br />';
+            $code = $xmlArray['Error']['Code'] ?: '';
+            $msg = $xmlArray['Error']['Message'] ?: 'System Error.';
+            outputErrorMessage($code, $msg);
             break;
         } else if (!isset($xmlArray['Items']['Item'])) {
-            echo 'Error!!<br />';
-            $code = $xmlArray['Items']['Request']['Errors']['Error']['Code'] ?? '';
-            $msg = $xmlArray['Items']['Request']['Errors']['Error']['Message'] ?? 'System Error.';
-            echo htmlspecialchars($code).'<br />';
-            echo htmlspecialchars($msg).'<br />';
-            echo '<br />';
+            $code = $xmlArray['Items']['Request']['Errors']['Error']['Code'] ?: '';
+            $msg = $xmlArray['Items']['Request']['Errors']['Error']['Message'] ?: 'System Error.';
+            outputErrorMessage($code, $msg);
             break;
         }
         $ItemArray = array_merge($ItemArray, $xmlArray['Items']['Item']);
@@ -170,15 +169,22 @@ for ($page = 1; $page <= 3; $page++) {
     usleep(500 * 1000);
 }
 
+function outputErrorMessage($code, $msg) {
+    echo 'Error!!<br />';
+    echo htmlspecialchars($code).'<br />';
+    echo htmlspecialchars($msg).'<br />';
+    echo '<br />';
+}
+
 function get_affiliate_url($url) {
     $component = parse_url($url);
     if ($component === false) {
         return $url;
     }
 
-    $affaliate = ($component['scheme'] ?? 'http').'://'.($component['host'] ?? 'amazon.com').'/o/ASIN';
-    parse_str($component['query'] ?? '', $query);
-    $ASIN = $query['creativeASIN'] ?? '';
+    $affaliate = ($component['scheme'] ?: 'http').'://'.($component['host'] ?: 'amazon.com').'/o/ASIN';
+    parse_str($component['query'] ?: '', $query);
+    $ASIN = $query['creativeASIN'] ?: '';
 
     if (empty($ASIN)) {
         return $url;
