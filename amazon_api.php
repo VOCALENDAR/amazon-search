@@ -185,7 +185,7 @@ function get_affiliate_url($url) {
         return $url;
     }
 
-    $affaliate = ($component['scheme'] ?? 'https').'://'.($component['host'] ?? 'www.amazon.co.jp').'/dp/';
+    $affaliate = ($component['scheme'] ?? 'https').'://'.($component['host'] ?? 'www.amazon.co.jp').'/dp';
     parse_str($component['query'] ?? '', $query);
     $ASIN = $query['creativeASIN'] ?? '';
 
