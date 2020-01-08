@@ -36,7 +36,7 @@ $releasedate = "";
 
 </form>
 
-<?php if (!defined('ACCESS_KEY_ID') || ACCESS_KEY_ID　== "" ||
+<?php if (!defined('ACCESS_KEY_ID') || ACCESS_KEY_ID == "" ||
          !defined('YOUR_SECRET_KEY') || YOUR_SECRET_KEY == ""): ?>
     <p>設定が読み取れません</p>
 </body>
@@ -185,7 +185,7 @@ function get_affiliate_url($url) {
         return $url;
     }
 
-    $affaliate = ($component['scheme'] ?? 'https').'://'.($component['host'] ?? 'www.amazon.co.jp').'/dp';
+    $affiliate = ($component['scheme'] ?? 'https').'://'.($component['host'] ?? 'www.amazon.co.jp').'/dp';
     parse_str($component['query'] ?? '', $query);
     $ASIN = $query['creativeASIN'] ?? '';
 
@@ -193,8 +193,8 @@ function get_affiliate_url($url) {
         return $url;
     }
 
-    $affaliate = $affaliate.'/'.$ASIN.'/ref=nosim?tag=vocalendar-22';
-    return $affaliate;
+    $affiliate = $affiliate.'/'.$ASIN.'/ref=nosim?tag=vocalendar-22';
+    return $affiliate;
 }
 
 ?>
