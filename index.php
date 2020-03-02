@@ -8,10 +8,10 @@ require_once __DIR__.'/AmazonAPI.php';
 // https://webservices.amazon.com/paapi5/documentation/locale-reference/japan.html
 const CATEGORIES = [
     "Music",
-    "DigitalMusic",
     "Books",
     "Hobbies",
     "Toys",
+    "All",
 ];
 
 const DEFAULT_KEYWORD = "初音ミク";
@@ -78,15 +78,44 @@ try {
 <?php
     $ASIN = $result->getASIN();
     $URL = $result->getDetailPageUrl();
-    $Title = $result->getItemInfo()->getTitle()->getDisplayValue();
-    $Price = $result->getOffers()->getListings()[0]->getPrice()->getDisplayAmount();
+    $Title = "";
+    $Date = "";
+    $itemInfo = $result->getItemInfo();
+    if ($itemInfo != null) {
+        $Title = $itemInfo->getTitle()->getDisplayValue();
+        if ($category === "Books") {
+            $ContentInfo = $itemInfo->getContentInfo();
+            if ($ContentInfo != null) {
+                $PublicationDate = $ContentInfo->getPublicationDate();
+                if ($PublicationDate != null) {
+                    $PublicationDate = $PublicationDate->getDisplayValue();
+                    $Date = (new \DateTime($PublicationDate))->format('Y/m/d');
+                }
+            }
+        } else {
+            $ProductInfo = $itemInfo->getProductInfo();
+            if ($ProductInfo != null) {
+                $ReleaseDate = $ProductInfo->getReleaseDate();
+                if ($ReleaseDate != null) {
+                    $ReleaseDate = $ReleaseDate->getDisplayValue();
+                    $Date = (new \DateTime($ReleaseDate))->format('Y/m/d');
+                }
+            }
+        }
+    }
+    $Price = "";
+    foreach($result->getOffers()->getListings() as $Offer) {
+        $Price = $Offer->getPrice()->getDisplayAmount();
+        break;
+    }
 ?>
     <li>
-        <p class='ReleaseDate'><?= '日付:取得処理はあとで' ?></p>
-        <p class='title'>
+        <p class='ReleaseDate'><?= $Date ?></p>
+        <p class='Title'>
             [<a href='<?= $URL ?>' target='_blank'>Link</a>]
             <?= $Title ?>
         </p>
+        <p class="Url"><?= $URL ?></p>
     </li>
 <?php endforeach; ?>
 </ul>

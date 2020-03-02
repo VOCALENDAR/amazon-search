@@ -47,9 +47,12 @@ class AmazonAPI {
         return $this->instance;
     }
 
+    // https://webservices.amazon.com/paapi5/documentation/search-items.html#resources-parameter
     private function getSearchResources() {
         return [
             SearchItemsResource::ITEM_INFOTITLE,
+            SearchItemsResource::ITEM_INFOPRODUCT_INFO,
+            SearchItemsResource::ITEM_INFOCONTENT_INFO,
             SearchItemsResource::OFFERSLISTINGSPRICE,
         ];
     }
