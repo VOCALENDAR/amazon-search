@@ -5,6 +5,10 @@ body {
     padding: 0;
     margin: 0;
 }
+h1, h2, h3, h4, h5, h6 {
+    margin: 20px;
+    padding: 0;
+}
 #searchOptions {
     margin: 20px;
     padding: 0;
@@ -53,9 +57,16 @@ body {
     padding: 0;
     margin: 0;
 }
-.title {
+.Title {
     font-size: 1rem;
     font-weight: normal;
+    padding: 0;
+    margin: 0;
+}
+.Url {
+    color: gray;
+    font-size: 0.7rem;
+    line-height: 1rem;
     padding: 0;
     margin: 0;
 }
