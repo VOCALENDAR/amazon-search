@@ -32,7 +32,7 @@ try {
 ?><!DOCTYPE html>
 <html lang="ja">
 <head>
-    <title>Amazon API test</title>
+    <title>Amazon API</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="amazon_api.css">
 </head>
@@ -55,7 +55,7 @@ try {
 
 <div class="pager">
 <label>pager</label>
-<?php $base_url = '/?'.http_build_query(compact(['category', 'keyword',])); ?>
+<?php $base_url = './?'.http_build_query(compact(['category', 'keyword',])); ?>
 <?php if ($page > 2): ?>
     <a href="<?= $base_url ?>&page=1">first</a>
 <?php endif; ?>
