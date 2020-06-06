@@ -53,6 +53,7 @@ class AmazonAPI {
             SearchItemsResource::ITEM_INFOTITLE,
             SearchItemsResource::ITEM_INFOPRODUCT_INFO,
             SearchItemsResource::ITEM_INFOCONTENT_INFO,
+            SearchItemsResource::ITEM_INFOFEATURES,
             SearchItemsResource::OFFERSLISTINGSPRICE,
         ];
     }
