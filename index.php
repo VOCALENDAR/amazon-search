@@ -3,6 +3,7 @@ namespace vocalendar;
 
 use Exception;
 
+require_once __DIR__.'/functions.php';
 require_once __DIR__.'/AmazonAPI.php';
 
 // https://webservices.amazon.com/paapi5/documentation/locale-reference/japan.html
@@ -41,12 +42,12 @@ try {
 <section id="searchOptions">
 
 <form method="GET">
-<input type="text" name="keyword" value="<?= htmlspecialchars($keyword) ?>">
+<input type="text" name="keyword" value="<?= h($keyword) ?>">
 
 <ul id="categorySelector">
 <?php foreach(CATEGORIES as $caItem): ?>
     <li class="<?= ($category == $caItem) ? 'active' : '' ?>">
-        <label><input type="radio" name="category" value="<?= $caItem ?>" <?= ($category == $caItem) ? 'checked' : '' ?> /><?= $caItem ?></label>
+        <label><input type="radio" name="category" value="<?= h($caItem) ?>" <?= ($category == $caItem) ? 'checked' : '' ?> /><?= h($caItem) ?></label>
     </li>
 <?php endforeach; ?>
 </ul>
@@ -55,7 +56,7 @@ try {
 
 <div class="pager">
 <label>pager</label>
-<?php $base_url = './?'.http_build_query(compact(['category', 'keyword',])); ?>
+<?php $base_url = h('./?'.http_build_query(compact(['category', 'keyword',]))); ?>
 <?php if ($page > 2): ?>
     <a href="<?= $base_url ?>&page=1">first</a>
 <?php endif; ?>
@@ -72,7 +73,7 @@ try {
 </div>
 
 </section>
-<h3>Page: <?= $page ?></h3>
+<h3>Page: <?= h($page) ?></h3>
 <ul id='SearchResult'>
 <?php foreach ($results as $result) : ?>
 <?php
@@ -110,12 +111,12 @@ try {
     }
 ?>
     <li>
-        <p class='ReleaseDate'><?= $Date ?></p>
+        <p class='ReleaseDate'><?= h($Date) ?></p>
         <p class='Title'>
-            [<a href='<?= $URL ?>' target='_blank'>Link</a>]
-            <?= $Title ?>
+            [<a href='<?= h($URL) ?>' target='_blank'>Link</a>]
+            <?= h($Title) ?>
         </p>
-        <p class="Url"><?= $URL ?></p>
+        <p class="Url"><?= h($URL) ?></p>
     </li>
 <?php endforeach; ?>
 </ul>
