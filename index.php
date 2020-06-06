@@ -16,6 +16,10 @@ const CATEGORIES = [
 ];
 
 const DEFAULT_KEYWORD = "初音ミク";
+const GOOGLE_CALENDAR_URL = "http://www.google.com/calendar/event";
+const CALENDAR_DEFAULT_PARAMETER = [
+    'action' => 'TEMPLATE',
+];
 
 try {
     $category = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? CATEGORIES[0];
@@ -73,47 +77,73 @@ try {
 </div>
 
 </section>
-<h3>Page: <?= h($page) ?></h3>
+<h3>Page: <?= $page ?></h3>
 <ul id='SearchResult'>
 <?php foreach ($results as $result) : ?>
 <?php
     $ASIN = $result->getASIN();
     $URL = $result->getDetailPageUrl();
     $Title = "";
-    $Date = "";
+    $Date = null;
+    $FormattedDate = "";
+    $GoogleFormatDate = "";
+    $Price = "";
+    $FeatureText = "";
     $itemInfo = $result->getItemInfo();
-    if ($itemInfo != null) {
+    if ($itemInfo !== null) {
         $Title = $itemInfo->getTitle()->getDisplayValue();
         if ($category === "Books") {
             $ContentInfo = $itemInfo->getContentInfo();
-            if ($ContentInfo != null) {
+            if ($ContentInfo !== null) {
                 $PublicationDate = $ContentInfo->getPublicationDate();
-                if ($PublicationDate != null) {
+                if ($PublicationDate !== null) {
                     $PublicationDate = $PublicationDate->getDisplayValue();
-                    $Date = (new \DateTime($PublicationDate))->format('Y/m/d');
+                    $Date = new \DateTimeImmutable($PublicationDate);
                 }
             }
         } else {
             $ProductInfo = $itemInfo->getProductInfo();
-            if ($ProductInfo != null) {
+            if ($ProductInfo !== null) {
                 $ReleaseDate = $ProductInfo->getReleaseDate();
-                if ($ReleaseDate != null) {
+                if ($ReleaseDate !== null) {
                     $ReleaseDate = $ReleaseDate->getDisplayValue();
-                    $Date = (new \DateTime($ReleaseDate))->format('Y/m/d');
+                    $Date = new \DateTimeImmutable($ReleaseDate);
                 }
             }
         }
+        // todo : 商品説明が取れない
+        // $Features = $itemInfo->getFeatures();
+        // if ($Features !== null) {
+        //     $FeatureText = implode("\n", $Features->getDisplayValues());
+        // }
     }
-    $Price = "";
+    if ($Date !== null) {
+        $FormattedDate = $Date->format('Y/m/d');
+        $GoogleFormatDate = $Date->format('Ymd').'/'.$Date->modify('+1 day')->format('Ymd'); // 終日1日のみの予定
+    }
     foreach($result->getOffers()->getListings() as $Offer) {
         $Price = $Offer->getPrice()->getDisplayAmount();
         break;
     }
+    $GoogleCalendarDetails = $Title."\n".$URL."\n";
+    // if ($FeatureText) {
+    //     $GoogleCalendarDetails .= "\n".$FeatureText."\n";
+    // }
+
+    $GoogleCalendarParams = CALENDAR_DEFAULT_PARAMETER + [
+        'text' => '【xxx】'.$Title,
+        'details' => $GoogleCalendarDetails,
+    ];
+    if ($GoogleFormatDate) {
+        $GoogleCalendarParams['dates'] = $GoogleFormatDate;
+    }
+    $GoogleCalendarUrl = GOOGLE_CALENDAR_URL.'?'.http_build_query($GoogleCalendarParams);
 ?>
     <li>
-        <p class='ReleaseDate'><?= h($Date) ?></p>
+        <p class='ReleaseDate'><?= h($FormattedDate) ?></p>
         <p class='Title'>
             [<a href='<?= h($URL) ?>' target='_blank'>Link</a>]
+            [<a href='<?= h($GoogleCalendarUrl) ?>'  target='_blank'>登録</a>]
             <?= h($Title) ?>
         </p>
         <p class="Url"><?= h($URL) ?></p>
