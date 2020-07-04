@@ -7,12 +7,18 @@ require_once __DIR__.'/functions.php';
 require_once __DIR__.'/AmazonAPI.php';
 
 // https://webservices.amazon.com/paapi5/documentation/locale-reference/japan.html
+const CATEGORY_MUSIC = "Music";
+const CATEGORY_BOOK = "Books";
+const CATEGORY_HOBBIES = "Hobbies";
+const CATEGORY_TOYS = "Toys";
+const CATEGORY_ALL = "All";
+
 const CATEGORIES = [
-    "Music",
-    "Books",
-    "Hobbies",
-    "Toys",
-    "All",
+    CATEGORY_MUSIC,
+    CATEGORY_BOOK,
+    CATEGORY_HOBBIES,
+    CATEGORY_TOYS,
+    CATEGORY_ALL,
 ];
 
 const DEFAULT_KEYWORD = "初音ミク";
@@ -129,9 +135,61 @@ try {
     // if ($FeatureText) {
     //     $GoogleCalendarDetails .= "\n".$FeatureText."\n";
     // }
+    $CategoryText = "xxx";
+    switch($category) {
+        case CATEGORY_MUSIC:
+            $CategoryText = "CD";
+            $Categories = [];
+            if (strpos($Title, "CD") !== false) {
+                $Categories[] = "CD";
+            }
+            if (
+                strpos($Title, "DVD") !== false &&
+                strpos($Title, "DVD付") === false
+            ) {
+                $Categories[] = "DVD";
+            }
+            if (
+                strpos($Title, "Blu-ray") !== false ||
+                strpos($Title, "BD") !== false
+            ) {
+                $Categories[] = "BD";
+            }
+            if (!empty($Categories)) {
+                $CategoryText = implode("/", $Categories);
+            }
+            break;
+        case CATEGORY_BOOK:
+            $CategoryText = "書籍";
+            break;
+        case CATEGORY_HOBBIES:
+            $CategoryText = "グッズ";
+            if (
+                strpos($Title, "フィギュア") !== false ||
+                strpos($Title, "ねんどろいど") !== false
+            ) {
+                $CategoryText = "FIG";
+            }
+            break;
+        case CATEGORY_TOYS:
+            $CategoryText = "グッズ";
+            if (
+                strpos($Title, "フィギュア") !== false ||
+                strpos($Title, "ねんどろいど") !== false
+            ) {
+                $CategoryText = "FIG";
+            }
+            break;
+        case CATEGORY_ALL:
+        default:
+            $CategoryText = "xxx";
+            break;
+    }
+    $CategoryText = "【".$CategoryText."】";
+
 
     $GoogleCalendarParams = CALENDAR_DEFAULT_PARAMETER + [
-        'text' => '【xxx】'.$Title,
+        'text' => $CategoryText.$Title,
         'details' => $GoogleCalendarDetails,
     ];
     if ($GoogleFormatDate) {
