@@ -237,6 +237,12 @@ try {
         <p class="Url"><?= h($URL) ?></p>
     </li>
 <?php endforeach; ?>
+<?php if (empty($results)): ?>
+    <?php $messages = $api->getMessages(); ?>
+    <?php foreach ($messages as $message): ?>
+    <p><?= nl2br(h($message)) ?></p>
+    <?php endforeach; ?>
+<?php endif; ?>
 </ul>
 
 </body>

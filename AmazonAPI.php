@@ -27,10 +27,17 @@ require_once __DIR__.'/AmazonAPIException.php';
 
 class AmazonAPI {
     // API config
-    private $config;
-    private $instance;
+    protected $config;
+    protected $instance;
+
+    protected $messages = [];
 
     public function __construct() {
+        $this->clearConfig();
+        $this->clearMessages();
+    }
+
+    public function clearConfig() {
         $this->config = new Configuration();
 
         $this->config->setAccessKey(ACCESS_KEY_ID);
@@ -38,6 +45,14 @@ class AmazonAPI {
 
         $this->config->setHost(API_HOST);
         $this->config->setRegion(API_REGION);
+    }
+
+    public function getMessages() {
+        return $this->messages;
+    }
+
+    public function clearMessages() {
+        $this->messages = [];
     }
 
     private function getApiInstance() {
@@ -105,28 +120,36 @@ class AmazonAPI {
         $filteredOptions = $this->filterOptions($options);
         \extract($filteredOptions);
 
-        // APIインスタンス
-        $instance = $this->getApiInstance();
+        try {
+            // APIインスタンス
+            $instance = $this->getApiInstance();
 
-        // リクエストパラメータ作成
-        $request = $this->createSearchRequest($category, $keyword, $itemCount, $itemPage, $merchant);
+            // リクエストパラメータ作成
+            $request = $this->createSearchRequest($category, $keyword, $itemCount, $itemPage, $merchant);
 
-        $response = $instance->searchItems($request);
 
-        if ($response->getErrors() != null) {
-            $errors = $response->getErrors();
-            $error = reset($errors);
-            if ($error->getCode() !== 'NoResults') {
-                $errorMessage = $error->getCode() . ': ' . $error->getMessage();
-                throw new AmazonAPIException($errorMessage);
+            $response = $instance->searchItems($request);
+
+            if ($response->getErrors() != null) {
+                $errors = $response->getErrors();
+                $error = reset($errors);
+                if ($error->getCode() !== 'NoResults') {
+                    $errorMessage = $error->getCode() . ': ' . $error->getMessage();
+                    throw new AmazonAPIException($errorMessage);
+                }
             }
-        }
 
-        $results = [];
-        if ($response->getSearchResult() != null) {
-            $results = $response->getSearchResult()->getItems();
-        }
+            $results = [];
+            if ($response->getSearchResult() != null) {
+                $results = $response->getSearchResult()->getItems();
+            }
 
-        return $results;
+            return $results;
+        } catch (\Exception $e) {
+            $message = "Error Type: " . $e->getCode(). PHP_EOL .
+                "Error Message: " . $e->getMessage();
+            $this->messages[] = $message;
+            return [];
+        }
     }
 }
