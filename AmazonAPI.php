@@ -27,10 +27,17 @@ require_once __DIR__.'/AmazonAPIException.php';
 
 class AmazonAPI {
     // API config
-    private $config;
-    private $instance;
+    protected $config;
+    protected $instance;
+
+    protected $messages = [];
 
     public function __construct() {
+        $this->clearConfig();
+        $this->clearMessages();
+    }
+
+    public function clearConfig() {
         $this->config = new Configuration();
 
         $this->config->setAccessKey(ACCESS_KEY_ID);
@@ -38,6 +45,14 @@ class AmazonAPI {
 
         $this->config->setHost(API_HOST);
         $this->config->setRegion(API_REGION);
+    }
+
+    public function getMessages() {
+        return $this->messages;
+    }
+
+    public function clearMessages() {
+        $this->messages = [];
     }
 
     private function getApiInstance() {
@@ -59,7 +74,7 @@ class AmazonAPI {
     }
 
     // https://webservices.amazon.com/paapi5/documentation/search-items.html
-    private function createSearchRequest($category, $keyword, $itemCount, $itemPage) {
+    private function createSearchRequest($category, $keyword, $itemCount, $itemPage, $merchant) {
         // APIで取得する項目
         $resources = $this->getSearchResources();
 
@@ -73,6 +88,7 @@ class AmazonAPI {
         $request->setPartnerTag(PARTNER_TAG);
         $request->setPartnerType(PartnerType::ASSOCIATES);
         $request->setResources($resources);
+        $request->setMerchant($merchant);
 
         // リクエストのバリデート
         $invalids = $request->listInvalidProperties();
@@ -84,29 +100,56 @@ class AmazonAPI {
         return $request;
     }
 
-    public function searchItems($category, $keyword, $options = []) {
+    public function filterOptions($options = []) {
         $itemCount = $options['itemCount'] ?? API_LIMIT;
         $itemPage = $options['itemPage'] ?? 1;
+        $merchant = $options['merchant'] ?? 'All';
 
-        // APIインスタンス
-        $instance = $this->getApiInstance();
-
-        // リクエストパラメータ作成
-        $request = $this->createSearchRequest($category, $keyword, $itemCount, $itemPage);
-
-        $response = $instance->searchItems($request);
-
-        if ($response->getErrors() != null) {
-            $errors = $response->getErrors();
-            $error = reset($errors);
-            throw new AmazonAPIException($error->getMessage(), $error->getCode());
+        if (!in_array($merchant, ['All', 'Amazon',], true)) {
+            $merchant = 'All';
         }
 
-        $results = [];
-        if ($response->getSearchResult() != null) {
-            $results = $response->getSearchResult()->getItems();
-        }
+        return compact([
+            'itemCount',
+            'itemPage',
+            'merchant',
+        ]);
+    }
 
-        return $results;
+    public function searchItems($category, $keyword, $options = []) {
+        $filteredOptions = $this->filterOptions($options);
+        \extract($filteredOptions);
+
+        try {
+            // APIインスタンス
+            $instance = $this->getApiInstance();
+
+            // リクエストパラメータ作成
+            $request = $this->createSearchRequest($category, $keyword, $itemCount, $itemPage, $merchant);
+
+
+            $response = $instance->searchItems($request);
+
+            if ($response->getErrors() != null) {
+                $errors = $response->getErrors();
+                $error = reset($errors);
+                if ($error->getCode() !== 'NoResults') {
+                    $errorMessage = $error->getCode() . ': ' . $error->getMessage();
+                    throw new AmazonAPIException($errorMessage);
+                }
+            }
+
+            $results = [];
+            if ($response->getSearchResult() != null) {
+                $results = $response->getSearchResult()->getItems();
+            }
+
+            return $results;
+        } catch (\Exception $e) {
+            $message = "Error Type: " . $e->getCode(). PHP_EOL .
+                "Error Message: " . $e->getMessage();
+            $this->messages[] = $message;
+            return [];
+        }
     }
 }
