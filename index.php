@@ -7,11 +7,11 @@ require_once __DIR__.'/functions.php';
 require_once __DIR__.'/AmazonAPI.php';
 
 // https://webservices.amazon.com/paapi5/documentation/locale-reference/japan.html
-const CATEGORY_MUSIC = "Music";
-const CATEGORY_BOOK = "Books";
+const CATEGORY_MUSIC   = "Music";
+const CATEGORY_BOOK    = "Books";
 const CATEGORY_HOBBIES = "Hobbies";
-const CATEGORY_TOYS = "Toys";
-const CATEGORY_ALL = "All";
+const CATEGORY_TOYS    = "Toys";
+const CATEGORY_ALL     = "All";
 
 const CATEGORIES = [
     CATEGORY_MUSIC,
@@ -19,6 +19,15 @@ const CATEGORIES = [
     CATEGORY_HOBBIES,
     CATEGORY_TOYS,
     CATEGORY_ALL,
+];
+
+# https://webservices.amazon.com/paapi5/documentation/search-items.html#merchant-parameter
+const MERCHANT_ALL    = "All";
+const MERCHANT_AMAZON = "Amazon";
+
+const MERCHANTS = [
+    MERCHANT_ALL,
+    MERCHANT_AMAZON,
 ];
 
 const DEFAULT_KEYWORD = "初音ミク";
@@ -29,12 +38,14 @@ const CALENDAR_DEFAULT_PARAMETER = [
 
 try {
     $category = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? CATEGORIES[0];
-    $keyword = filter_input(INPUT_GET, 'keyword', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? DEFAULT_KEYWORD;
-    $page = (int)(filter_input(INPUT_GET, 'page', FILTER_SANITIZE_NUMBER_INT) ?? 1);
+    $keyword  = filter_input(INPUT_GET, 'keyword',  FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? DEFAULT_KEYWORD;
+    $page     = (int)(filter_input(INPUT_GET, 'page', FILTER_SANITIZE_NUMBER_INT) ?? 1);
+    $merchant = filter_input(INPUT_GET, 'merchant',  FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? MERCHANTS[0];
 
     $api = new AmazonAPI();
-    $results = $api->searchItems($category, $keyword, ['itemPage' => $page]);
-} catch(Exception $e) {
+    $results = $api->searchItems($category, $keyword, ['itemPage' => $page, 'merchant' => $merchant]);
+
+} catch (Exception $e) {
     $results = [];
     echo "Error Type: ", $e->getCode(), PHP_EOL;
     echo "Error Message: ", $e->getMessage(), PHP_EOL;
@@ -52,8 +63,12 @@ try {
 <section id="searchOptions">
 
 <form method="GET">
+<div>
 <input type="text" name="keyword" value="<?= h($keyword) ?>">
+</div>
 
+<div>
+<label>カテゴリ</label>
 <ul id="categorySelector">
 <?php foreach(CATEGORIES as $caItem): ?>
     <li class="<?= ($category == $caItem) ? 'active' : '' ?>">
@@ -61,12 +76,27 @@ try {
     </li>
 <?php endforeach; ?>
 </ul>
+</div>
+
+<div>
+<label>出品者</label>
+<ul id="merchantSelector">
+<?php foreach(MERCHANTS as $mcItem): ?>
+    <li class="<?= ($merchant == $mcItem) ? 'active' : '' ?>">
+        <label><input type="radio" name="merchant" value="<?= h($mcItem) ?>" <?= ($merchant == $mcItem) ? 'checked' : '' ?> /><?= h($mcItem) ?></label>
+    </li>
+<?php endforeach; ?>
+</ul>
+</div>
+
+<div>
 <input type="submit" value="検索">
+</div>
 </form>
 
 <div class="pager">
 <label>pager</label>
-<?php $base_url = h('./?'.http_build_query(compact(['category', 'keyword',]))); ?>
+<?php $base_url = h('./?'.http_build_query(compact(['category', 'keyword', 'merchant',]))); ?>
 <?php if ($page > 2): ?>
     <a href="<?= $base_url ?>&page=1">first</a>
 <?php endif; ?>

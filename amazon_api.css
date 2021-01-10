@@ -18,29 +18,35 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0.5rem .25rem;
     font-size: 1.5rem;
 }
-#categorySelector {
+#categorySelector,
+#merchantSelector {
     list-style-type: none;
     padding: 0;
     margin: .5rem 0 0;
 }
-#categorySelector li {
+#categorySelector li,
+#merchantSelector li {
     display: inline;
     border-right: 1px solid gray;
     padding-right: .5em;
     margin-right: .5em;
 }
-#categorySelector li.active a {
-    text-decoration: none;
+#categorySelector li.active a,
+#merchantSelector li.active a {
+        text-decoration: none;
     font-weight: bold;
     color: black;
 }
-#categorySelector li input[type='radio'] {
-    margin-right: .5em;
+#categorySelector li input[type='radio'],
+#merchantSelector li input[type='radio'] {
+        margin-right: .5em;
 }
 
-#categorySelector li:nth-last-of-type(1) {
-    border: none;
+#categorySelector li:nth-last-of-type(1),
+#merchantSelector li:nth-last-of-type(1) {
+        border: none;
 }
+
 #SearchResult {
     list-style-type: none;
     padding: 0;
