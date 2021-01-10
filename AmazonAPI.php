@@ -59,7 +59,7 @@ class AmazonAPI {
     }
 
     // https://webservices.amazon.com/paapi5/documentation/search-items.html
-    private function createSearchRequest($category, $keyword, $itemCount, $itemPage) {
+    private function createSearchRequest($category, $keyword, $itemCount, $itemPage, $merchant) {
         // APIで取得する項目
         $resources = $this->getSearchResources();
 
@@ -73,6 +73,7 @@ class AmazonAPI {
         $request->setPartnerTag(PARTNER_TAG);
         $request->setPartnerType(PartnerType::ASSOCIATES);
         $request->setResources($resources);
+        $request->setMerchant($merchant);
 
         // リクエストのバリデート
         $invalids = $request->listInvalidProperties();
@@ -84,22 +85,41 @@ class AmazonAPI {
         return $request;
     }
 
-    public function searchItems($category, $keyword, $options = []) {
+    public function filterOptions($options = []) {
         $itemCount = $options['itemCount'] ?? API_LIMIT;
         $itemPage = $options['itemPage'] ?? 1;
+        $merchant = $options['merchant'] ?? 'All';
+
+        if (!in_array($merchant, ['All', 'Amazon',], true)) {
+            $merchant = 'All';
+        }
+
+        return compact([
+            'itemCount',
+            'itemPage',
+            'merchant',
+        ]);
+    }
+
+    public function searchItems($category, $keyword, $options = []) {
+        $filteredOptions = $this->filterOptions($options);
+        \extract($filteredOptions);
 
         // APIインスタンス
         $instance = $this->getApiInstance();
 
         // リクエストパラメータ作成
-        $request = $this->createSearchRequest($category, $keyword, $itemCount, $itemPage);
+        $request = $this->createSearchRequest($category, $keyword, $itemCount, $itemPage, $merchant);
 
         $response = $instance->searchItems($request);
 
         if ($response->getErrors() != null) {
             $errors = $response->getErrors();
             $error = reset($errors);
-            throw new AmazonAPIException($error->getMessage(), $error->getCode());
+            if ($error->getCode() !== 'NoResults') {
+                $errorMessage = $error->getCode() . ': ' . $error->getMessage();
+                throw new AmazonAPIException($errorMessage);
+            }
         }
 
         $results = [];
