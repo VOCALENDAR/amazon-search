@@ -18,12 +18,14 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0.5rem .25rem;
     font-size: 1.5rem;
 }
+#searchTypeSelector,
 #categorySelector,
 #merchantSelector {
     list-style-type: none;
     padding: 0;
-    margin: .5rem 0 0;
+    margin: 0 0 0.5rem;
 }
+#searchTypeSelector li,
 #categorySelector li,
 #merchantSelector li {
     display: inline;
@@ -33,7 +35,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 #categorySelector li.active a,
 #merchantSelector li.active a {
-        text-decoration: none;
+    text-decoration: none;
     font-weight: bold;
     color: black;
 }
@@ -41,7 +43,7 @@ h1, h2, h3, h4, h5, h6 {
 #merchantSelector li input[type='radio'] {
         margin-right: .5em;
 }
-
+#searchTypeSelector li:nth-last-of-type(1),
 #categorySelector li:nth-last-of-type(1),
 #merchantSelector li:nth-last-of-type(1) {
         border: none;
