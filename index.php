@@ -30,20 +30,46 @@ const MERCHANTS = [
     MERCHANT_AMAZON,
 ];
 
-const DEFAULT_KEYWORD = "初音ミク";
+const DEFAULT_KEYWORDS = [
+    '初音ミク',
+    '鏡音リン',
+    '鏡音レン',
+    '巡音ルカ',
+    'MEIKO',
+    'KAITO',
+    'IA',
+    'GUMI',
+    '東北ずん子',
+    '重音テト',
+    'ボーカロイド',
+    'vocaloid',
+    'ボカロP',
+];
+const SEARCH_TYPE_AND = 'AND';
+const SEARCH_TYPE_OR  = 'OR';
+const SEARCH_TYPE_LIST = [
+    SEARCH_TYPE_AND,
+    SEARCH_TYPE_OR,
+];
 const GOOGLE_CALENDAR_URL = "http://www.google.com/calendar/event";
 const CALENDAR_DEFAULT_PARAMETER = [
     'action' => 'TEMPLATE',
 ];
 
 try {
-    $category = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? CATEGORIES[0];
-    $keyword  = filter_input(INPUT_GET, 'keyword',  FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? DEFAULT_KEYWORD;
-    $page     = (int)(filter_input(INPUT_GET, 'page', FILTER_SANITIZE_NUMBER_INT) ?? 1);
-    $merchant = filter_input(INPUT_GET, 'merchant',  FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? MERCHANTS[0];
+    $category   = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? CATEGORIES[0];
+    $keyword    = filter_input(INPUT_GET, 'keyword',  FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? implode('|', DEFAULT_KEYWORDS);
+    $searchType = filter_input(INPUT_GET, 'search_type',  FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? SEARCH_TYPE_AND;
+    $page       = (int)(filter_input(INPUT_GET, 'page', FILTER_SANITIZE_NUMBER_INT) ?? 1);
+    $merchant   = filter_input(INPUT_GET, 'merchant',  FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? MERCHANTS[0];
+
+    $searchKeyword = str_replace('　', ' ', $keyword);
+    if ($searchType == SEARCH_TYPE_OR) {
+        $searchKeyword = str_replace(' ', '|', $searchKeyword);
+    }
 
     $api = new AmazonAPI();
-    $results = $api->searchItems($category, $keyword, ['itemPage' => $page, 'merchant' => $merchant]);
+    $results = $api->searchItems($category, $searchKeyword, ['itemPage' => $page, 'merchant' => $merchant]);
 
 } catch (Exception $e) {
     $results = [];
@@ -64,7 +90,15 @@ try {
 
 <form method="GET">
 <div>
-<input type="text" name="keyword" value="<?= h($keyword) ?>">
+<input type="text" name="keyword" value="<?= h($keyword) ?>"><br>
+※スペースをANDかORで検索するかを選べます。(AND検索を指定しても|はORで検索します。)
+<ul id="searchTypeSelector">
+<?php foreach(SEARCH_TYPE_LIST as $searchTypeItem): ?>
+    <li class="">
+        <label><input type="radio" name="search_type" value="<?= h($searchTypeItem) ?>" <?= ($searchType == $searchTypeItem) ? 'checked' : '' ?> /><?= h($searchTypeItem) ?></label>
+    </li>
+<?php endforeach; ?>
+</ul>
 </div>
 
 <div>
