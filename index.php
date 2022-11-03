@@ -59,11 +59,11 @@ const CORE_STATUS_REGISTERED = '登録済み';
 const CORE_STATUS_UNREGISTERED = '未登録';
 
 try {
-    $category   = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? CATEGORIES[0];
-    $keyword    = filter_input(INPUT_GET, 'keyword',  FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? implode('|', DEFAULT_KEYWORDS);
-    $searchType = filter_input(INPUT_GET, 'search_type',  FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? SEARCH_TYPE_AND;
+    $category   = filter_input(INPUT_GET, 'category', FILTER_DEFAULT, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? CATEGORIES[0];
+    $keyword    = filter_input(INPUT_GET, 'keyword',  FILTER_DEFAULT, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? implode('|', DEFAULT_KEYWORDS);
+    $searchType = filter_input(INPUT_GET, 'search_type',  FILTER_DEFAULT, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? SEARCH_TYPE_AND;
     $page       = (int)(filter_input(INPUT_GET, 'page', FILTER_SANITIZE_NUMBER_INT) ?? 1);
-    $merchant   = filter_input(INPUT_GET, 'merchant',  FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? MERCHANTS[0];
+    $merchant   = filter_input(INPUT_GET, 'merchant',  FILTER_DEFAULT, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? MERCHANTS[0];
 
     $searchKeyword = str_replace('　', ' ', $keyword);
     if ($searchType == SEARCH_TYPE_OR) {
