@@ -288,7 +288,7 @@ try {
                     [<a href='<?= h($eventUrl) ?>' target='_blank'>登録済み</a>]
                     <?php else: ?>
                     [未登録]
-                    <? endif; ?>
+                    <?php endif; ?>
                     <?= h($Title) ?>
                 </p>
                 <p class="Url"><?= h($URL) ?></p>
