@@ -55,6 +55,9 @@ const CALENDAR_DEFAULT_PARAMETER = [
     'action' => 'TEMPLATE',
 ];
 
+const CORE_STATUS_REGISTERED = '登録済み';
+const CORE_STATUS_UNREGISTERED = '未登録';
+
 try {
     $category   = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? CATEGORIES[0];
     $keyword    = filter_input(INPUT_GET, 'keyword',  FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK) ?? implode('|', DEFAULT_KEYWORDS);
@@ -160,6 +163,7 @@ try {
             <?php
             $ASIN = $result->getASIN();
             $URL = $result->getDetailPageUrl();
+            /** @var VocalendarCoreEvent $event */
             $event = $result->event;
             $Title = "";
             $Date = null;
@@ -268,13 +272,23 @@ try {
                 $GoogleCalendarParams['dates'] = $GoogleFormatDate;
             }
             $GoogleCalendarUrl = GOOGLE_CALENDAR_URL . '?' . http_build_query($GoogleCalendarParams);
+            // Vocalendar Coreの検索結果
+            $coreStatus = is_null($event) ? CORE_STATUS_UNREGISTERED : CORE_STATUS_REGISTERED;
+            $eventUrl = '';
+            if ($coreStatus === CORE_STATUS_REGISTERED) {
+                $eventUrl = $event->gHtmlLink;
+            }
             ?>
             <li>
                 <p class='ReleaseDate'><?= h($FormattedDate) ?></p>
                 <p class='Title'>
                     [<a href='<?= h($URL) ?>' target='_blank'>Link</a>]
                     [<a href='<?= h($GoogleCalendarUrl) ?>' target='_blank'>登録</a>]
-                    [<?php if (is_null($event)): ?>未登録<?php else: ?>登録済み<?php endif; ?>]
+                    <?php if ($coreStatus === CORE_STATUS_REGISTERED) : ?>
+                    [<a href='<?= h($eventUrl) ?>' target='_blank'>登録済み</a>]
+                    <?php else: ?>
+                    [未登録]
+                    <? endif; ?>
                     <?= h($Title) ?>
                 </p>
                 <p class="Url"><?= h($URL) ?></p>
